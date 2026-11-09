@@ -1,0 +1,22 @@
+name: photo-cover
+on:
+  push:
+    branches: [main]
+    paths: ["requests/photo_cover.json"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk && pip install -q pillow
+      - run: python tools/photo_cover.py requests/photo_cover.json
+        env:
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+      - run: |
+          git config user.name "nanominelia-bot"
+          git config user.email "nanominelia@gmail.com"
+          git add public/posts
+          git diff --cached --quiet || (git commit -m "Auto photo covers [skip ci]" && git push)
