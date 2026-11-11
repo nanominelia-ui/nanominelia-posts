@@ -1,0 +1,6 @@
+[
+  {"no": 41, "styles": ["photo", "minimal"], "queries": ["japanese meal soup", "fresh vegetables", "healthy food table", "salad bowl"],
+   "hook": "塩分の摂りすぎ、\\n全国平均は?", "ans": "最新の調査では、平均9.6g/日でした。",
+   "why": "令和6年の国民健康・栄養調査(厚生労働省)では、男性10.5g、女性8.9gで、国の目標(7g)を上回っています。",
+   "pt": "汁物の量や、加工食品の食塩相当量の表示を見直す。", "cta": "あなたはどのくらい? 保存して振り返ろう"}
+]
