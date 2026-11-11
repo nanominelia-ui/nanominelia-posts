@@ -156,6 +156,77 @@ def editorial_slide(no, i, text, out, photo=None):
         for ln in ls: d.text((120, y), ln, font=fo, fill=NAVY); y += int(s * 1.7)
     os.makedirs(os.path.dirname(out), exist_ok=True); img.save(out, "JPEG", quality=92, subsampling=0)
 
+def _spaced(d, xy, text, font, fill, gap=10, anchor="l"):
+    x, y = xy; tw = sum(d.textlength(c, font=font) + gap for c in text) - gap
+    if anchor == "c": x = x - tw / 2
+    for c in text:
+        d.text((x, y), c, font=font, fill=fill); x += d.textlength(c, font=font) + gap
+    return tw
+
+def _shade(img, top, bottom, y0=0, y1=H):
+    ov = Image.new("RGBA", (W, H)); px = ImageDraw.Draw(ov)
+    for y in range(y0, y1):
+        t = (y - y0) / max(1, y1 - y0); a = int(top + (bottom - top) * t)
+        px.line([(0, y), (W, y)], fill=(10, 14, 36, max(0, min(255, a))))
+    return Image.alpha_composite(img.convert("RGBA"), ov)
+
+def magazine_slide(no, i, text, out, photo, kicker="MINERAL NOTES", stat=None, em=None):
+    base = pc.cover_crop(photo)
+    if i == 1:
+        img = _shade(base, 175, 0, 0, 440)              # 上部(題字用)を少し暗く
+        img = Image.alpha_composite(img, _shade(base, 0, 0)) if False else img
+        ov2 = _shade(base.convert("RGB"), 0, 205, 620, H); img = Image.alpha_composite(img, ov2) if False else Image.blend(img, ov2, 0.0) if False else img
+        # 下部グラデーションを別途合成
+        bt = Image.new("RGBA", (W, H)); px = ImageDraw.Draw(bt)
+        for y in range(560, H): px.line([(0, y), (W, y)], fill=(10, 14, 36, int(215 * ((y - 560) / (H - 560)) ** 1.3)))
+        img = Image.alpha_composite(img, bt); d = ImageDraw.Draw(img)
+        mast = sf(150); tw = d.textlength("NANOMINELIA", font=mast)
+        size = 150
+        while tw > W - 120 and size > 80: size -= 4; mast = sf(size); tw = d.textlength("NANOMINELIA", font=mast)
+        d.text(((W - tw) / 2, 70), "NANOMINELIA", font=mast, fill=(255, 255, 255))
+        d.line([(60, 70 + size + 28), (W - 60, 70 + size + 28)], fill=(255, 255, 255), width=3)
+        _spaced(d, (60, 70 + size + 44), f"ISSUE {no}", sf(26), (255, 255, 255), 6)
+        _spaced(d, (W - 60, 70 + size + 44), kicker, sf(26), (255, 255, 255), 6, anchor="l") if False else None
+        kw = sum(d.textlength(c, font=sf(26)) + 6 for c in kicker) - 6
+        _spaced(d, (W - 60 - kw, 70 + size + 44), kicker, sf(26), (255, 255, 255), 6)
+        # スタッツ or NEW のバッジ
+        badge = stat or "NEW"; bf = sf(70 if len(badge) <= 4 else 54)
+        cx, cy, r = 880, 560, 120
+        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(255, 214, 92)); d.ellipse([cx - r + 10, cy - r + 10, cx + r - 10, cy + r - 10], outline=INDIGO, width=3)
+        bw = d.textlength(badge, font=bf); d.text((cx - bw / 2, cy - 70), badge, font=bf, fill=INDIGO)
+        sw = d.textlength("TODAY", font=sf(24)); d.text((cx - sw / 2, cy + 38), "TODAY", font=sf(24), fill=INDIGO)
+        nl = text.count("\n") + 1
+        for sz in (118, 106, 96, 86, 76, 68):
+            fo = sf(sz) if False else f(sz); ls = pc.wrap(text, d, fo, W - 160); s_ = sz
+            if len(ls) <= nl: break
+        y = H - 190 - int(len(ls) * s_ * 1.3)
+        for ln in ls:
+            d.text((62, y + 3), ln, font=fo, fill=(0, 0, 0, 90)); d.text((60, y), ln, font=fo, fill=(255, 255, 255)); y += int(s_ * 1.3)
+        d.rectangle([60, y + 14, 200, y + 20], fill=(255, 214, 92))
+        _spaced(d, (60, H - 96), "SWIPE  →", sf(30), (255, 255, 255), 6)
+        bx = W - 60 - 190                                   # バーコード風
+        d.rectangle([bx, H - 120, W - 60, H - 50], fill=(255, 255, 255))
+        import random as _r; rr = _r.Random(no); x = bx + 10
+        while x < W - 70: w = rr.choice((2, 3, 5)); d.rectangle([x, H - 112, x + w, H - 58], fill=(20, 20, 40)); x += w + rr.choice((3, 4, 6))
+    else:
+        img = Image.new("RGB", (W, H), IVORY); d = ImageDraw.Draw(img)
+        ph = 700
+        r_ = max(W / base.width, ph / base.height) if False else None
+        ph_img = pc.cover_crop(photo).crop((0, 0, W, ph)) if i % 2 == 0 else pc.cover_crop(photo).crop((0, H - ph, W, H))
+        img.paste(ph_img, (0, 0)); d = ImageDraw.Draw(img)
+        d.text((60, 52), "NANOMINELIA", font=sf(34), fill=(255, 255, 255))
+        pn = f"P.{i:02d}"; d.text((W - 60 - d.textlength(pn, font=sf(34)), 52), pn, font=sf(34), fill=(255, 255, 255))
+        d.text((50, ph - 300), f"{i - 1:02d}", font=sf(240), fill=(255, 255, 255))
+        d.rectangle([0, ph, W, ph + 10], fill=(255, 214, 92))
+        _spaced(d, (60, ph + 56), LABELS[i - 1], sf(32), GOLD, 10)
+        fo, ls, s_ = fit(d, text, W - 120, 4, (64, 58, 52, 46))
+        y = ph + 120
+        for ln in ls: d.text((60, y), ln, font=fo, fill=NAVY); y += int(s_ * 1.5)
+        d.line([(60, H - 80), (W - 60, H - 80)], fill=GOLD, width=2)
+        _spaced(d, (60, H - 62), f"ISSUE {no}  /  {kicker}", sf(22), GOLD, 5)
+        img = img.convert("RGBA")
+    os.makedirs(os.path.dirname(out), exist_ok=True); img.convert("RGB").save(out, "JPEG", quality=92, subsampling=0)
+
 def build(r, photos=None):
     texts = [r["hook"].replace("\\n", "\n"), r["ans"], r["why"], r["pt"], r["cta"]]
     outs = {}
@@ -163,6 +234,7 @@ def build(r, photos=None):
         for i, t in enumerate(texts, 1):
             out = f"public/posts/{r['no']:02d}/{i}.jpg" if r.get("apply") else f"samples/{r['no']}_{style}/{i}.jpg"
             if style == "photo": photo_slide(r["no"], i, t, photos[(i - 1) % len(photos)], out)
+            elif style == "magazine": magazine_slide(r["no"], i, t, out, photos[(i - 1) % len(photos)], r.get("kicker", "MINERAL NOTES"), r.get("stat"), r.get("em"))
             elif style == "editorial": editorial_slide(r["no"], i, t, out, photos[0] if photos else None)
             elif style == "bold": bold_slide(r["no"], i, t, out, r.get("stat"), r.get("em"))
             else: minimal_slide(r["no"], i, t, out)
@@ -171,7 +243,7 @@ def build(r, photos=None):
 if __name__ == "__main__":
     for r in json.load(open(sys.argv[1])):
         photos = []
-        if any(x in r.get("styles", ["photo", "minimal"]) for x in ("photo", "editorial")):
+        if any(x in r.get("styles", ["photo", "minimal"]) for x in ("photo", "editorial", "magazine")):
             for k, q in enumerate(r["queries"]):
                 p, src = pc.fetch_photo(q, r["no"] * 10 + k); photos.append(p); print("photo", q, src)
         build(r, photos); print("ok", r["no"])
