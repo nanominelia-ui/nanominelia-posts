@@ -11,18 +11,27 @@ NO_START = set("。、，．！？!?）)」』】…ー〜～・：:;”’")
 
 def font(size): return ImageFont.truetype(BOLD, size, index=0)
 
+def _get(url, headers=None):
+    return urllib.request.urlopen(urllib.request.Request(url, headers=headers or {"User-Agent": "nanominelia-bot"}), timeout=60).read()
+
 def fetch_photo(query, seed):
-    key = os.environ["PEXELS_API_KEY"]
+    """PIXABAY_API_KEY があれば Pixabay、なければ PEXELS_API_KEY で Pexels から取得。"""
+    pk = os.environ.get("PIXABAY_API_KEY", "").strip()
+    if pk:
+        url = "https://pixabay.com/api/?" + urllib.parse.urlencode({
+            "key": pk, "q": query, "image_type": "photo", "orientation": "vertical",
+            "min_width": 800, "min_height": 1000, "safesearch": "true", "per_page": 20})
+        hits = json.loads(_get(url)).get("hits", [])
+        if not hits: raise SystemExit(f"no photo for {query}")
+        h = random.Random(seed).choice(hits[:10])
+        return Image.open(io.BytesIO(_get(h["largeImageURL"]))).convert("RGB"), h.get("pageURL", "")
+    key = os.environ["PEXELS_API_KEY"].strip()
     url = "https://api.pexels.com/v1/search?" + urllib.parse.urlencode(
         {"query": query, "orientation": "portrait", "per_page": 15, "size": "large"})
-    req = urllib.request.Request(url, headers={"Authorization": key, "User-Agent": "nanominelia-bot"})
-    data = json.load(urllib.request.urlopen(req, timeout=30))
-    photos = data.get("photos", [])
+    photos = json.loads(_get(url, {"Authorization": key, "User-Agent": "nanominelia-bot"})).get("photos", [])
     if not photos: raise SystemExit(f"no photo for {query}")
     p = random.Random(seed).choice(photos[:8])
-    img_url = p["src"].get("large2x") or p["src"]["large"]
-    raw = urllib.request.urlopen(urllib.request.Request(img_url, headers={"User-Agent": "nanominelia-bot"}), timeout=60).read()
-    return Image.open(io.BytesIO(raw)).convert("RGB"), p.get("url", "")
+    return Image.open(io.BytesIO(_get(p["src"].get("large2x") or p["src"]["large"]))).convert("RGB"), p.get("url", "")
 
 def cover_crop(img):
     r = max(W / img.width, H / img.height)

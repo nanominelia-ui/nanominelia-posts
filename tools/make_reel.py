@@ -55,12 +55,27 @@ def make_bgm(path, mood, seconds, sr=48000):
     with wave.open(path, "wb") as w:
         w.setnchannels(2); w.setsampwidth(2); w.setframerate(sr); w.writeframes(pcm.tobytes())
 
+def pick_bgm(no, mood, seconds, tmp):
+    """bgm/ にある音源(例: calm_01.mp3, warm_02.mp3)から選んで、長さに合わせて切り出す。なければ合成BGM。"""
+    d = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "bgm")
+    files = sorted(f for f in (os.listdir(d) if os.path.isdir(d) else [])
+                   if f.lower().endswith((".mp3", ".wav", ".m4a", ".ogg")) and f.lower().startswith(mood))
+    if not files:
+        files = sorted(f for f in (os.listdir(d) if os.path.isdir(d) else []) if f.lower().endswith((".mp3", ".wav", ".m4a", ".ogg")))
+    out = f"{tmp}/bgm.wav"
+    if not files:
+        make_bgm(out, mood, seconds); return out
+    src = os.path.join(d, files[no % len(files)])
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", "0", "-i", src, "-t", f"{seconds:.2f}",
+                    "-ar", "48000", "-ac", "2", out], check=True)
+    return out
+
 def build(no, mood="calm", out=None, root="public/posts", tmp="/tmp/reel"):
     os.makedirs(tmp, exist_ok=True)
     frames = []
     for i in range(1, 6):
         p = f"{tmp}/f{i}.jpg"; frame(f"{root}/{no:02d}/{i}.jpg", p); frames.append(p)
-    L = total_len(); bgm = f"{tmp}/bgm.wav"; make_bgm(bgm, mood, L)
+    L = total_len(); bgm = pick_bgm(no, mood, L, tmp)
     out = out or f"videos/reel_{no:02d}.mp4"; os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
     cmd = ["ffmpeg", "-y", "-loglevel", "error"]
     for d, p in zip(DUR, frames): cmd += ["-loop", "1", "-t", str(d + FADE), "-i", p]
