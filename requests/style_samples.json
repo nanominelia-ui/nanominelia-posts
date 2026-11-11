@@ -1,6 +1,12 @@
 [
-  {"no": 41, "styles": ["photo", "minimal"], "queries": ["japanese meal soup", "fresh vegetables", "healthy food table", "salad bowl"],
-   "hook": "塩分の摂りすぎ、\\n全国平均は?", "ans": "最新の調査では、平均9.6g/日でした。",
+  {"no": 41, "styles": ["photo", "bold"],
+   "queries": ["japanese soup bowl", "sea salt crystals", "blue ocean waves", "cozy kitchen home", "morning sky sunrise"],
+   "hook": "塩分の摂りすぎ、\\n全国平均は?", "stat": "9.6g", "em": "全国平均", "ans": "最新の調査では、平均9.6g/日でした。",
    "why": "令和6年の国民健康・栄養調査(厚生労働省)では、男性10.5g、女性8.9gで、国の目標(7g)を上回っています。",
-   "pt": "汁物の量や、加工食品の食塩相当量の表示を見直す。", "cta": "あなたはどのくらい? 保存して振り返ろう"}
+   "pt": "汁物の量や、加工食品の食塩相当量の表示を見直す。", "cta": "あなたはどのくらい? 保存して振り返ろう"},
+  {"no": 31, "styles": ["photo", "bold"],
+   "queries": ["banana fruit", "green forest leaves", "breakfast table morning", "park walking autumn", "blue sky clouds"],
+   "hook": "塩分ばかり\\n気にしていませんか?", "em": "塩分", "ans": "ナトリウムは「上限」、カリウムは「下限」が目標です。",
+   "why": "日本人の食事では、ナトリウムは多め、カリウムは少なめになりがちだからです。",
+   "pt": "野菜・海藻・豆をもう一品足して、汁物の量も見直す。", "cta": "保存して、今日の献立でチェック"}
 ]
