@@ -1,61 +1,61 @@
 [
-  {
-    "no": 39,
-    "styles": [
-      "magazine"
-    ],
-    "kicker": "THE SALT ISSUE",
-    "queries": [
-      "sea salt",
-      "miso soup",
-      "kitchen scale",
-      "measuring spoon salt",
-      "shopping basket vegetables"
-    ],
-    "hook": "ナトリウムと食塩相当量、\\n同じ数字?",
-    "ans": "ナトリウムの量と、食塩相当量は別の数字です。",
-    "why": "読み違えると、塩分を少なく見積もりやすいからです。",
-    "pt": "食塩相当量の欄を優先して見る。",
-    "cta": "次の買い物で確認してみて",
-    "apply": true
-  },
-  {
-    "no": 40,
-    "styles": [
-      "photo"
-    ],
-    "queries": [
-      "balanced meal",
-      "fresh vegetables",
-      "rice bowl",
-      "tofu",
-      "dinner table"
-    ],
-    "hook": "結局、\\n何をすればいいの?",
-    "ans": "①食事を整える ②表示を見る ③補うなら目安量を守る。",
-    "why": "基準は「不足」と「過剰」の両方を見ているからです。",
-    "pt": "難しく考えず、まず1つだけ実行する。",
-    "cta": "保存して、あとで見返そう",
-    "apply": true
-  },
-  {
-    "no": 43,
-    "styles": [
-      "magazine"
-    ],
-    "kicker": "THE IRON ISSUE",
-    "queries": [
-      "spinach",
-      "beef steak",
-      "clams",
-      "lentils beans",
-      "cooking pot"
-    ],
-    "hook": "鉄に上限がない=\\nたくさん摂っていい?",
-    "ans": "耐容上限量は設定されていませんが、多く摂ってよいという意味ではありません。",
-    "why": "必要な量は、年齢・性別・体の状況によって異なるためです。",
-    "pt": "補うときは、製品表示の目安量を守る。",
-    "cta": "保存して、あとで見返そう",
-    "apply": true
-  }
+ {
+  "no": 39,
+  "styles": [
+   "magazine"
+  ],
+  "kicker": "THE SALT ISSUE",
+  "queries": [
+   "sea salt",
+   "miso soup",
+   "kitchen scale",
+   "measuring spoon salt",
+   "shopping basket vegetables"
+  ],
+  "hook": "ナトリウムと食塩相当量、\\n同じ数字?",
+  "ans": "ナトリウムの量と、食塩相当量は別の数字です。",
+  "why": "読み違えると、塩分を少なく見積もりやすいからです。",
+  "pt": "食塩相当量の欄を優先して見る。",
+  "cta": "次の買い物で確認してみて",
+  "apply": true
+ },
+ {
+  "no": 40,
+  "styles": [
+   "photo"
+  ],
+  "queries": [
+   "balanced meal",
+   "fresh vegetables",
+   "rice bowl",
+   "tofu",
+   "dinner table"
+  ],
+  "hook": "結局、\\n何をすればいいの?",
+  "ans": "①食事を整える ②表示を見る ③補うなら目安量を守る。",
+  "why": "基準は「不足」と「過剰」の両方を見ているからです。",
+  "pt": "難しく考えず、まず1つだけ実行する。",
+  "cta": "保存して、あとで見返そう",
+  "apply": true
+ },
+ {
+  "no": 43,
+  "styles": [
+   "magazine"
+  ],
+  "kicker": "THE IRON ISSUE",
+  "queries": [
+   "spinach",
+   "beef steak",
+   "clams",
+   "lentils beans",
+   "cooking pot"
+  ],
+  "hook": "鉄に上限がない=\\nたくさん摂っていい?",
+  "ans": "耐容上限量は設定されていませんが、多く摂ってよいという意味ではありません。",
+  "why": "必要な量は、年齢・性別・体の状況によって異なるためです。",
+  "pt": "補うときは、製品表示の目安量を守る。",
+  "cta": "保存して、あとで見返そう",
+  "apply": true
+ }
 ]

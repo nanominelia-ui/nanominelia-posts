@@ -12,7 +12,14 @@ NO_START = set("。、，．！？!?）)」』】…ー〜～・：:;”’")
 def font(size): return ImageFont.truetype(BOLD, size, index=0)
 
 def _get(url, headers=None):
-    return urllib.request.urlopen(urllib.request.Request(url, headers=headers or {"User-Agent": "nanominelia-bot"}), timeout=60).read()
+    import time
+    for k in range(5):
+        try:
+            data = urllib.request.urlopen(urllib.request.Request(url, headers=headers or {"User-Agent": "nanominelia-bot"}), timeout=60).read()
+            time.sleep(1.2); return data
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and k < 4: time.sleep(35); continue   # レート制限: 待って再試行
+            raise
 
 def fetch_photo(query, seed):
     """PIXABAY_API_KEY があれば Pixabay、なければ PEXELS_API_KEY で Pexels から取得。"""
