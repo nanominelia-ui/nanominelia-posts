@@ -213,6 +213,9 @@ def magazine_slide(no, i, text, out, photo, kicker="MINERAL NOTES", stat=None, e
         ph = 700
         r_ = max(W / base.width, ph / base.height) if False else None
         ph_img = pc.cover_crop(photo).crop((0, 0, W, ph)) if i % 2 == 0 else pc.cover_crop(photo).crop((0, H - ph, W, H))
+        sh = Image.new("RGBA", (W, ph)); sp = ImageDraw.Draw(sh)
+        for yy in range(260): sp.line([(0, yy), (W, yy)], fill=(10, 14, 36, int(150 * (1 - yy / 260))))
+        ph_img = Image.alpha_composite(ph_img.convert("RGBA"), sh).convert("RGB")
         img.paste(ph_img, (0, 0)); d = ImageDraw.Draw(img)
         d.text((60, 52), "NANOMINELIA", font=sf(34), fill=(255, 255, 255))
         pn = f"P.{i:02d}"; d.text((W - 60 - d.textlength(pn, font=sf(34)), 52), pn, font=sf(34), fill=(255, 255, 255))
