@@ -19,5 +19,5 @@ jobs:
       - run: |
           git config user.name "nanominelia-bot"
           git config user.email "nanominelia@gmail.com"
-          git add samples
+          git add samples public/posts
           git diff --cached --quiet || (git commit -m "Auto style samples [skip ci]" && git push)

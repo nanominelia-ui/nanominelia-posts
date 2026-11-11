@@ -3,7 +3,7 @@ style=photo   : 写真を全面に敷いて白文字(全スライド写真)
 style=minimal : クリーム地＋大きな藍色の文字(写真なし)
 使い方(Actions): python tools/styles.py requests/style_samples.json  → samples/<no>_<style>/1..5.jpg"""
 import json, os, sys
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 sys.path.insert(0, os.path.dirname(__file__))
 import photo_cover as pc
 
@@ -120,13 +120,50 @@ def bold_slide(no, i, text, out, stat=None, em=None):
         _draw_marked(d, ls, fo, s, 70, top, em if i == 2 else None, hl, fg)
     os.makedirs(os.path.dirname(out), exist_ok=True); img.convert("RGB").save(out, "JPEG", quality=92, subsampling=0)
 
+SERIF = "/usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc"
+GOLD = (176, 140, 78); IVORY = (248, 244, 237); NAVY = (28, 38, 74)
+def sf(size):
+    try: return ImageFont.truetype(SERIF, size, index=0)
+    except Exception: return pc.font(size)
+
+def _rr_photo(img, photo, box, radius=28):
+    x0, y0, x1, y1 = box; w, h = x1 - x0, y1 - y0
+    r = max(w / photo.width, h / photo.height)
+    p = photo.resize((int(photo.width * r) + 1, int(photo.height * r) + 1), Image.LANCZOS)
+    p = p.crop(((p.width - w) // 2, (p.height - h) // 2, (p.width - w) // 2 + w, (p.height - h) // 2 + h))
+    m = Image.new("L", (w, h), 0); ImageDraw.Draw(m).rounded_rectangle([0, 0, w, h], radius=radius, fill=255)
+    img.paste(p, (x0, y0), m)
+
+def editorial_slide(no, i, text, out, photo=None):
+    img = Image.new("RGB", (W, H), IVORY); d = ImageDraw.Draw(img)
+    d.text((80, 70), "NANOMINELIA", font=sf(28), fill=GOLD)
+    t = f"{i} / 5"; d.text((W - 80 - d.textlength(t, font=sf(28)), 70), t, font=sf(28), fill=GOLD)
+    d.line([(80, 124), (W - 80, 124)], fill=GOLD, width=2)
+    if i == 1:
+        if photo is not None: _rr_photo(img, photo, (80, 170, W - 80, 800))
+        d.text((80, 840), f"MINERAL NOTES  No.{no}", font=sf(28), fill=GOLD)
+        fo, ls, s = fit(d, text, W - 160, 3, (80, 72, 64, 56))
+        y = 880
+        for ln in ls: d.text((80, y), ln, font=fo, fill=NAVY); y += int(s * 1.45)
+        d.line([(80, y + 20), (260, y + 20)], fill=GOLD, width=4)
+        d.text((80, 1262), "SWIPE  →", font=sf(30), fill=GOLD)
+    else:
+        d.text((80, 250), f"{i - 1:02d}", font=sf(170), fill=(228, 214, 186))
+        d.text((80, 470), LABELS[i - 1], font=sf(30), fill=GOLD); d.line([(80, 520), (200, 520)], fill=GOLD, width=3)
+        fo, ls, s = fit(d, text, W - 170, 7, (62, 56, 52, 46))
+        y = max(580, int((H - len(ls) * s * 1.7) / 2) + 80)
+        d.rectangle([80, y, 86, y + int(len(ls) * s * 1.7) - 20], fill=GOLD)
+        for ln in ls: d.text((120, y), ln, font=fo, fill=NAVY); y += int(s * 1.7)
+    os.makedirs(os.path.dirname(out), exist_ok=True); img.save(out, "JPEG", quality=92, subsampling=0)
+
 def build(r, photos=None):
     texts = [r["hook"].replace("\\n", "\n"), r["ans"], r["why"], r["pt"], r["cta"]]
     outs = {}
     for style in r.get("styles", ["photo", "minimal"]):
         for i, t in enumerate(texts, 1):
-            out = f"samples/{r['no']}_{style}/{i}.jpg"
+            out = f"public/posts/{r['no']:02d}/{i}.jpg" if r.get("apply") else f"samples/{r['no']}_{style}/{i}.jpg"
             if style == "photo": photo_slide(r["no"], i, t, photos[(i - 1) % len(photos)], out)
+            elif style == "editorial": editorial_slide(r["no"], i, t, out, photos[0] if photos else None)
             elif style == "bold": bold_slide(r["no"], i, t, out, r.get("stat"), r.get("em"))
             else: minimal_slide(r["no"], i, t, out)
     return outs
@@ -134,7 +171,7 @@ def build(r, photos=None):
 if __name__ == "__main__":
     for r in json.load(open(sys.argv[1])):
         photos = []
-        if "photo" in r.get("styles", ["photo", "minimal"]):
+        if any(x in r.get("styles", ["photo", "minimal"]) for x in ("photo", "editorial")):
             for k, q in enumerate(r["queries"]):
                 p, src = pc.fetch_photo(q, r["no"] * 10 + k); photos.append(p); print("photo", q, src)
         build(r, photos); print("ok", r["no"])
