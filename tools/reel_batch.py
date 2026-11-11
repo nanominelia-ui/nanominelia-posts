@@ -26,3 +26,4 @@ def main():
         if ts and now - int(ts) > KEEP_DAYS * 86400: os.remove(f); print("deleted old", f)
 
 if __name__ == "__main__": main()
+# trigger

@@ -1,5 +1,8 @@
 name: reels
 on:
+  push:
+    branches: [main]
+    paths: ["tools/reel_batch.py", "tools/make_reel.py", "bgm/**"]
   schedule:
     - cron: "0 0 * * *"   # 毎日 09:00 JST: 新しい投稿の動画を作り、古い動画を削除
   workflow_dispatch:
