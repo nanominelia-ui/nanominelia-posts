@@ -270,7 +270,6 @@ def note_slide(no, i, text, out, photo, em=None):
     img = _paper().convert("RGBA"); d = ImageDraw.Draw(img)
     if i == 1:
         d.text((130, 70), f"ミネラルメモ No.{no}", font=hf(40), fill=INK)
-        _spaced(d, (130, 124), "NANOMINELIA", sf(24), GOLD, 6)
         pol = _polaroid(photo, 640, "きょうのテーマ ♪")
         _paste_rot(img, pol, -4, (W / 2 + 10, 520)); _tape(img, (W / 2 - 280, 190), -18); _tape(img, (W / 2 + 300, 200), 14)
         d = ImageDraw.Draw(img)
@@ -284,7 +283,7 @@ def note_slide(no, i, text, out, photo, em=None):
             if em and em in ln:
                 a = ln.index(em); x0 = lx + d.textlength(ln[:a], font=fo); x1 = x0 + d.textlength(em, font=fo)
                 d.rectangle([x0 - 6, y + sz * 0.55, x1 + 6, y + sz * 1.12], fill=(255, 235, 120))
-            d.text((lx, y), ln, font=fo, fill=INK); y += int(sz * 1.3)
+            d.text((lx, y), ln, font=fo, fill=INK, stroke_width=1, stroke_fill=INK); y += int(sz * 1.3)
         d.text((W - 330, 1270), "めくってね →", font=hf(42), fill=(214, 90, 130))
     else:
         d.text((130, 70), f"ミネラルメモ No.{no}", font=hf(36), fill=INK)
@@ -300,7 +299,7 @@ def note_slide(no, i, text, out, photo, em=None):
         fo = hf(64); ls = pc.wrap(text, nd, fo, sw_ - 100); sz = 64
         while len(ls) > 6 and sz > 44: sz -= 4; fo = hf(sz); ls = pc.wrap(text, nd, fo, sw_ - 100)
         yy = max(50, int((sh_ - len(ls) * sz * 1.4) / 2))
-        for ln in ls: nd.text((50, yy), ln, font=fo, fill=INK); yy += int(sz * 1.4)
+        for ln in ls: nd.text((50, yy), ln, font=fo, fill=INK, stroke_width=1, stroke_fill=INK); yy += int(sz * 1.4)
         _paste_rot(img, note, 1.6, (W / 2 + 20, 640))
         pol = _polaroid(photo, 400); _paste_rot(img, pol, 5, (W - 330, 1060)); _tape(img, (W - 330, 880), 6)
         d = ImageDraw.Draw(img)
