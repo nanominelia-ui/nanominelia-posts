@@ -20,10 +20,18 @@ def fetch_photo(query, seed):
     if pk:
         url = "https://pixabay.com/api/?" + urllib.parse.urlencode({
             "key": pk, "q": query, "image_type": "photo", "orientation": "vertical",
-            "min_width": 800, "min_height": 1000, "safesearch": "true", "per_page": 20})
+            "min_width": 800, "min_height": 1000, "safesearch": "true", "per_page": 50})
         hits = json.loads(_get(url)).get("hits", [])
-        if not hits: raise SystemExit(f"no photo for {query}")
-        h = random.Random(seed).choice(hits[:10])
+        PEOPLE = {"man", "woman", "girl", "boy", "child", "children", "baby", "people", "person", "face", "portrait",
+                  "model", "lady", "male", "female", "kid", "couple", "family", "hand", "hands", "logo", "brand", "text", "sign"}
+        words = [w.lower() for w in query.replace(",", " ").split()]
+        def tagset(h): return {t.strip().lower() for t in h.get("tags", "").replace(",", " ").split()}
+        ok = [h for h in hits if not (tagset(h) & PEOPLE)]
+        # 検索語がタグに多く含まれる写真を優先(内容との一致)
+        ok.sort(key=lambda h: -sum(1 for w in words if w in tagset(h) or any(w in t for t in tagset(h))))
+        if not ok: raise SystemExit(f"no photo for {query}")
+        h = random.Random(seed).choice(ok[:4])
+        print("  pick:", h.get("tags"))
         return Image.open(io.BytesIO(_get(h["largeImageURL"]))).convert("RGB"), h.get("pageURL", "")
     key = os.environ["PEXELS_API_KEY"].strip()
     url = "https://api.pexels.com/v1/search?" + urllib.parse.urlencode(
