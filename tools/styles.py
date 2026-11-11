@@ -230,6 +230,83 @@ def magazine_slide(no, i, text, out, photo, kicker="MINERAL NOTES", stat=None, e
         img = img.convert("RGBA")
     os.makedirs(os.path.dirname(out), exist_ok=True); img.convert("RGB").save(out, "JPEG", quality=92, subsampling=0)
 
+HAND = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "fonts", "Yomogi-Regular.ttf")
+def hf(size):
+    try: return ImageFont.truetype(HAND, size)
+    except Exception: return pc.font(size)
+
+PAPER = (252, 248, 236); GRID = (214, 226, 238); INK = (36, 44, 84)
+STICKY = [(255, 235, 140), (255, 196, 214), (190, 232, 220), (205, 214, 250)]
+NOTE_LABELS = ["", "こたえ", "なぜかというと", "ポイント", "さいごに"]
+
+def _paper():
+    img = Image.new("RGB", (W, H), PAPER); d = ImageDraw.Draw(img)
+    for x in range(0, W, 54): d.line([(x, 0), (x, H)], fill=GRID, width=1)
+    for y in range(0, H, 54): d.line([(0, y), (W, y)], fill=GRID, width=1)
+    d.line([(96, 0), (96, H)], fill=(240, 170, 180), width=3)
+    return img
+
+def _paste_rot(img, layer, angle, center, shadow=True):
+    r = layer.convert("RGBA").rotate(angle, expand=True, resample=Image.BICUBIC)
+    x, y = int(center[0] - r.width / 2), int(center[1] - r.height / 2)
+    if shadow:
+        sh = Image.new("RGBA", r.size, (0, 0, 0, 0)); sh.paste((0, 0, 0, 70), mask=r.split()[3])
+        sh = sh.filter(ImageFilter.GaussianBlur(10)); img.paste(sh, (x + 8, y + 12), sh)
+    img.paste(r, (x, y), r)
+
+def _tape(img, center, angle=-8):
+    t = Image.new("RGBA", (190, 56), (255, 224, 120, 175)); _paste_rot(img, t, angle, center, shadow=False)
+
+def _polaroid(photo, size, cap=None):
+    pad, bot = 26, 90; ph = pc.cover_crop(photo).resize((size, size), Image.LANCZOS) if False else None
+    sq = photo.copy(); r = max(size / sq.width, size / sq.height)
+    sq = sq.resize((int(sq.width * r) + 1, int(sq.height * r) + 1), Image.LANCZOS)
+    sq = sq.crop(((sq.width - size) // 2, (sq.height - size) // 2, (sq.width - size) // 2 + size, (sq.height - size) // 2 + size))
+    fr = Image.new("RGBA", (size + pad * 2, size + pad + bot), (255, 255, 255, 255)); fr.paste(sq, (pad, pad))
+    if cap: ImageDraw.Draw(fr).text((pad + 6, size + pad + 20), cap, font=hf(34), fill=INK)
+    return fr
+
+def note_slide(no, i, text, out, photo, em=None):
+    img = _paper().convert("RGBA"); d = ImageDraw.Draw(img)
+    if i == 1:
+        d.text((130, 70), f"ミネラルメモ No.{no}", font=hf(40), fill=INK)
+        _spaced(d, (130, 124), "NANOMINELIA", sf(24), GOLD, 6)
+        pol = _polaroid(photo, 640, "きょうのテーマ ♪")
+        _paste_rot(img, pol, -4, (W / 2 + 10, 520)); _tape(img, (W / 2 - 280, 190), -18); _tape(img, (W / 2 + 300, 200), 14)
+        d = ImageDraw.Draw(img)
+        nl = text.count("\n") + 1
+        for sz in (88, 80, 72, 64, 58):
+            fo = hf(sz); ls = pc.wrap(text, d, fo, W - 200)
+            if len(ls) <= nl: break
+        y = 930
+        for ln in ls:
+            lx = 100
+            if em and em in ln:
+                a = ln.index(em); x0 = lx + d.textlength(ln[:a], font=fo); x1 = x0 + d.textlength(em, font=fo)
+                d.rectangle([x0 - 6, y + sz * 0.55, x1 + 6, y + sz * 1.12], fill=(255, 235, 120))
+            d.text((lx, y), ln, font=fo, fill=INK); y += int(sz * 1.3)
+        d.text((W - 330, 1270), "めくってね →", font=hf(42), fill=(214, 90, 130))
+    else:
+        d.text((130, 70), f"ミネラルメモ No.{no}", font=hf(36), fill=INK)
+        d.ellipse([W - 190, 52, W - 90, 152], outline=(214, 90, 130), width=4)
+        t = f"{i - 1}/4"; d.text((W - 140 - d.textlength(t, font=hf(36)) / 2, 78), t, font=hf(36), fill=(214, 90, 130))
+        # ラベル(マスキングテープ風)
+        lab = NOTE_LABELS[i - 1]; lf = hf(48); lw = d.textlength(lab, font=lf) + 80
+        tag = Image.new("RGBA", (int(lw), 84), STICKY[(i - 2) % 4] + (255,)); ImageDraw.Draw(tag).text((40, 14), lab, font=lf, fill=INK)
+        _paste_rot(img, tag, -3, (130 + lw / 2, 250))
+        # 付箋に本文
+        col = STICKY[(i - 2) % 4]; sw_, sh_ = 840, 560
+        note = Image.new("RGBA", (sw_, sh_), col + (255,)); nd = ImageDraw.Draw(note)
+        fo = hf(64); ls = pc.wrap(text, nd, fo, sw_ - 100); sz = 64
+        while len(ls) > 6 and sz > 44: sz -= 4; fo = hf(sz); ls = pc.wrap(text, nd, fo, sw_ - 100)
+        yy = max(50, int((sh_ - len(ls) * sz * 1.4) / 2))
+        for ln in ls: nd.text((50, yy), ln, font=fo, fill=INK); yy += int(sz * 1.4)
+        _paste_rot(img, note, 1.6, (W / 2 + 20, 640))
+        pol = _polaroid(photo, 400); _paste_rot(img, pol, 5, (W - 330, 1060)); _tape(img, (W - 330, 880), 6)
+        d = ImageDraw.Draw(img)
+        d.text((130, 1160), "☆ メモしておこう", font=hf(44), fill=(214, 90, 130))
+    os.makedirs(os.path.dirname(out), exist_ok=True); img.convert("RGB").save(out, "JPEG", quality=92, subsampling=0)
+
 def build(r, photos=None):
     texts = [r["hook"].replace("\\n", "\n"), r["ans"], r["why"], r["pt"], r["cta"]]
     outs = {}
@@ -237,6 +314,7 @@ def build(r, photos=None):
         for i, t in enumerate(texts, 1):
             out = f"public/posts/{r['no']:02d}/{i}.jpg" if r.get("apply") else f"samples/{r['no']}_{style}/{i}.jpg"
             if style == "photo": photo_slide(r["no"], i, t, photos[(i - 1) % len(photos)], out)
+            elif style == "note": note_slide(r["no"], i, t, out, photos[(i - 1) % len(photos)], r.get("em"))
             elif style == "magazine": magazine_slide(r["no"], i, t, out, photos[(i - 1) % len(photos)], r.get("kicker", "MINERAL NOTES"), r.get("stat"), r.get("em"))
             elif style == "editorial": editorial_slide(r["no"], i, t, out, photos[0] if photos else None)
             elif style == "bold": bold_slide(r["no"], i, t, out, r.get("stat"), r.get("em"))
@@ -246,7 +324,7 @@ def build(r, photos=None):
 if __name__ == "__main__":
     for r in json.load(open(sys.argv[1])):
         photos = []
-        if any(x in r.get("styles", ["photo", "minimal"]) for x in ("photo", "editorial", "magazine")):
+        if any(x in r.get("styles", ["photo", "minimal"]) for x in ("photo", "editorial", "magazine", "note")):
             for k, q in enumerate(r["queries"]):
                 p, src = pc.fetch_photo(q, r["no"] * 10 + k); photos.append(p); print("photo", q, src)
         build(r, photos); print("ok", r["no"])

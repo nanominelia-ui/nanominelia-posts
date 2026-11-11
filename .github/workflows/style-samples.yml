@@ -12,6 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk && pip install -q pillow
+      - run: mkdir -p fonts && (test -s fonts/Yomogi-Regular.ttf || curl -sL -o fonts/Yomogi-Regular.ttf https://github.com/google/fonts/raw/main/ofl/yomogi/Yomogi-Regular.ttf) || true
       - run: python tools/styles.py requests/style_samples.json
         env:
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}

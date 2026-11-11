@@ -2,9 +2,9 @@
  {
   "no": 39,
   "styles": [
-   "magazine"
+   "note"
   ],
-  "kicker": "THE SALT ISSUE",
+  "em": "食塩相当量",
   "queries": [
    "sea salt",
    "miso soup",
@@ -16,7 +16,6 @@
   "ans": "ナトリウムの量と、食塩相当量は別の数字です。",
   "why": "読み違えると、塩分を少なく見積もりやすいからです。",
   "pt": "食塩相当量の欄を優先して見る。",
-  "cta": "次の買い物で確認してみて",
-  "apply": true
+  "cta": "次の買い物で確認してみて"
  }
 ]
