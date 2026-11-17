@@ -376,6 +376,34 @@ def recipe_slide(no, i, text, out, photo, em=None):
         d.text((W / 2, 1240), f"Fig.{i}", font=sf(24, False), fill=R_SUB, anchor="ma")
     img.save(out, "JPEG", quality=92, subsampling=0)
 
+def recipe_page(no, rc, out, photo):
+    img = _rpaper(); d = ImageDraw.Draw(img)
+    _spaced(d, (W / 2, 82), "MINERAL  NOTES", sf(28), R_SUB, 8, "m")
+    d.line([(110, 132), (W - 110, 132)], fill=R_INK, width=2); d.line([(110, 140), (W - 110, 140)], fill=R_INK, width=1)
+    d.text((130, 168), f"No.{no:02d}", font=sf(32), fill=R_SUB); d.text((W - 130, 168), "RECIPE", font=sf(32), fill=R_ACC, anchor="ra")
+    _frame_photo(img, photo, (130, 225, W - 130, 520)); d = ImageDraw.Draw(img)
+    d.text((W / 2, 560), rc["title"], font=sf(60), fill=R_INK, anchor="ma")
+    meta = f"{rc.get('serves', '2人分')}　／　{rc.get('time', '約10分')}"
+    d.text((W / 2, 640), meta, font=sf(30, False), fill=R_SUB, anchor="ma")
+    d.line([(130, 692), (W - 130, 692)], fill=R_INK, width=1)
+    # 材料
+    d.text((130, 712), "材 料", font=sf(40), fill=R_ACC)
+    ing = rc["ing"]; y = 774; half = (len(ing) + 1) // 2
+    for k, (nm, amt) in enumerate(ing):
+        col = 0 if k < half else 1; row = k if k < half else k - half
+        x0 = 130 + col * 440; yy = y + row * 46
+        d.text((x0, yy), nm, font=sf(30, False), fill=R_INK); d.text((x0 + 410, yy), amt, font=sf(30, False), fill=R_INK, anchor="ra")
+        d.line([(x0, yy + 40), (x0 + 410, yy + 40)], fill=(205, 190, 168), width=1)
+    y2 = y + half * 46 + 24
+    d.text((130, y2), "作り方", font=sf(40), fill=R_ACC); y2 += 62
+    for k, st in enumerate(rc["steps"], 1):
+        d.ellipse([130, y2 + 2, 172, y2 + 44], outline=R_ACC, width=3); d.text((151, y2 + 23), str(k), font=sf(26), fill=R_ACC, anchor="mm")
+        fo = sf(30, False); ls = pc.wrap(st, d, fo, W - 330)
+        for ln in ls: d.text((196, y2 + 2), ln, font=fo, fill=R_INK); y2 += 42
+        y2 += 14
+    d.text((W / 2, H - 112), rc.get("note", "※本投稿は一般的な栄養情報です。特定の効果を保証するものではありません。"), font=sf(22, False), fill=R_SUB, anchor="ma")
+    os.makedirs(os.path.dirname(out), exist_ok=True); img.save(out, "JPEG", quality=92, subsampling=0)
+
 def build(r, photos=None):
     texts = [r["hook"].replace("\\n", "\n"), r["ans"], r["why"], r["pt"], r["cta"]]
     outs = {}
@@ -385,10 +413,14 @@ def build(r, photos=None):
             if style == "photo": photo_slide(r["no"], i, t, photos[(i - 1) % len(photos)], out)
             elif style == "note": note_slide(r["no"], i, t, out, photos[(i - 1) % len(photos)], r.get("em"))
             elif style == "recipe": os.makedirs(os.path.dirname(out), exist_ok=True); recipe_slide(r["no"], i, t, out, photos[(i - 1) % len(photos)], r.get("em"))
+            elif style == "recipe" and False: pass
             elif style == "magazine": magazine_slide(r["no"], i, t, out, photos[(i - 1) % len(photos)], r.get("kicker", "MINERAL NOTES"), r.get("stat"), r.get("em"))
             elif style == "editorial": editorial_slide(r["no"], i, t, out, photos[0] if photos else None)
             elif style == "bold": bold_slide(r["no"], i, t, out, r.get("stat"), r.get("em"))
             else: minimal_slide(r["no"], i, t, out)
+    if "recipe" in r.get("styles", []) and r.get("recipe"):
+        out = f"public/posts/{r['no']:02d}/6.jpg" if r.get("apply") else f"samples/{r['no']}_recipe/6.jpg"
+        recipe_page(r["no"], r["recipe"], out, photos[-1])
     return outs
 
 if __name__ == "__main__":
