@@ -6,11 +6,11 @@
   ],
   "em": "あと一品",
   "queries": [
-   "miso soup bowl",
-   "tofu",
-   "wakame seaweed",
-   "komatsuna green vegetables",
-   "miso soup tofu wakame"
+   "japanese soup",
+   "tofu block",
+   "seaweed",
+   "green vegetables bunch",
+   "japanese soup bowl tofu"
   ],
   "hook": "献立に、\\nあと一品足すなら?",
   "ans": "汁物の具を、野菜・海藻・豆に広げる方法があります。",
