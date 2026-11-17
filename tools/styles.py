@@ -381,27 +381,33 @@ def recipe_page(no, rc, out, photo):
     _spaced(d, (W / 2, 82), "MINERAL  NOTES", sf(28), R_SUB, 8, "m")
     d.line([(110, 132), (W - 110, 132)], fill=R_INK, width=2); d.line([(110, 140), (W - 110, 140)], fill=R_INK, width=1)
     d.text((130, 168), f"No.{no:02d}", font=sf(32), fill=R_SUB); d.text((W - 130, 168), "RECIPE", font=sf(32), fill=R_ACC, anchor="ra")
-    _frame_photo(img, photo, (130, 225, W - 130, 520)); d = ImageDraw.Draw(img)
-    d.text((W / 2, 560), rc["title"], font=sf(60), fill=R_INK, anchor="ma")
+    _frame_photo(img, photo, (130, 215, W - 130, 400)); d = ImageDraw.Draw(img)
+    d.text((W / 2, 432), rc["title"], font=sf(54), fill=R_INK, anchor="ma")
     meta = f"{rc.get('serves', '2人分')}　／　{rc.get('time', '約10分')}"
-    d.text((W / 2, 640), meta, font=sf(30, False), fill=R_SUB, anchor="ma")
-    d.line([(130, 692), (W - 130, 692)], fill=R_INK, width=1)
+    d.text((W / 2, 500), meta, font=sf(26, False), fill=R_SUB, anchor="ma")
+    d.line([(130, 542), (W - 130, 542)], fill=R_INK, width=1)
     # 材料
-    d.text((130, 712), "材 料", font=sf(40), fill=R_ACC)
-    ing = rc["ing"]; y = 774; half = (len(ing) + 1) // 2
+    d.text((130, 556), "材 料", font=sf(36), fill=R_ACC)
+    ing = rc["ing"]; y = 608; half = (len(ing) + 1) // 2
     for k, (nm, amt) in enumerate(ing):
         col = 0 if k < half else 1; row = k if k < half else k - half
-        x0 = 130 + col * 440; yy = y + row * 46
+        x0 = 130 + col * 440; yy = y + row * 44
         d.text((x0, yy), nm, font=sf(30, False), fill=R_INK); d.text((x0 + 410, yy), amt, font=sf(30, False), fill=R_INK, anchor="ra")
         d.line([(x0, yy + 40), (x0 + 410, yy + 40)], fill=(205, 190, 168), width=1)
-    y2 = y + half * 46 + 24
-    d.text((130, y2), "作り方", font=sf(40), fill=R_ACC); y2 += 62
+    y2 = y + half * 44 + 14
+    d.text((130, y2), "作り方", font=sf(36), fill=R_ACC); y2 += 54
     for k, st in enumerate(rc["steps"], 1):
         d.ellipse([130, y2 + 2, 172, y2 + 44], outline=R_ACC, width=3); d.text((151, y2 + 23), str(k), font=sf(26), fill=R_ACC, anchor="mm")
-        fo = sf(30, False); ls = pc.wrap(st, d, fo, W - 330)
-        for ln in ls: d.text((196, y2 + 2), ln, font=fo, fill=R_INK); y2 += 42
-        y2 += 14
-    d.text((W / 2, H - 112), rc.get("note", "※本投稿は一般的な栄養情報です。特定の効果を保証するものではありません。"), font=sf(22, False), fill=R_SUB, anchor="ma")
+        fo = sf(28, False); ls = pc.wrap(st, d, fo, W - 330)
+        for ln in ls: d.text((196, y2 + 2), ln, font=fo, fill=R_INK); y2 += 38
+        y2 += 8
+    if rc.get("minerals"):
+        mh = 54 + 36 * len(rc["minerals"]); my = y2 + 4
+        d.rectangle([130, my, W - 130, my + mh], outline=R_ACC, width=2)
+        d.text((150, my + 10), "ミネラルのメモ（含まれる主なミネラル）", font=sf(26), fill=R_ACC)
+        for k, t in enumerate(rc["minerals"]): d.text((150, my + 50 + 36 * k), t, font=sf(24, False), fill=R_INK)
+    d.text((W / 2, H - 120), rc.get("src", "※本投稿は一般的な栄養情報です。特定の効果を保証するものではありません。"), font=sf(21, False), fill=R_SUB, anchor="ma")
+    if rc.get("src"): d.text((W / 2, H - 92), "※本投稿は一般的な栄養情報です。特定の効果を保証するものではありません。", font=sf(21, False), fill=R_SUB, anchor="ma")
     os.makedirs(os.path.dirname(out), exist_ok=True); img.save(out, "JPEG", quality=92, subsampling=0)
 
 def build(r, photos=None):
