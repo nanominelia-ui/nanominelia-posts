@@ -1,23 +1,23 @@
 [
  {
-  "no": 40,
+  "no": 44,
   "styles": [
    "recipe"
   ],
-  "em": "何を",
+  "em": "あと一品",
   "queries": [
-   "healthy meal plate",
-   "fresh vegetables",
-   "rice bowl",
+   "miso soup bowl",
    "tofu",
+   "wakame seaweed",
+   "komatsuna green vegetables",
    "miso soup tofu wakame"
   ],
-  "hook": "結局、\\n何をすればいいの?",
-  "ans": "①食事を整える ②表示を見る ③補うなら目安量を守る。",
-  "why": "基準は「不足」と「過剰」の両方を見ているからです。",
-  "pt": "難しく考えず、まず1つだけ実行する。",
-  "cta": "保存して、あとで見返そう",
-  "apply": false,
+  "hook": "献立に、\\nあと一品足すなら?",
+  "ans": "汁物の具を、野菜・海藻・豆に広げる方法があります。",
+  "why": "いろいろな食品を組み合わせるほど、取り入れられる栄養素の種類が広がるからです。",
+  "pt": "具は3種類を目安に。",
+  "cta": "保存して、今夜の献立に",
+  "apply": true,
   "recipe": {
    "title": "豆腐とわかめの具だくさん味噌汁",
    "serves": "2人分",
