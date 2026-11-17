@@ -2,7 +2,7 @@
  {
   "no": 40,
   "styles": [
-   "note"
+   "recipe"
   ],
   "em": "何を",
   "queries": [
@@ -17,26 +17,6 @@
   "why": "基準は「不足」と「過剰」の両方を見ているからです。",
   "pt": "難しく考えず、まず1つだけ実行する。",
   "cta": "保存して、あとで見返そう",
-  "apply": true
- },
- {
-  "no": 42,
-  "styles": [
-   "magazine"
-  ],
-  "kicker": "THE NEW GUIDELINES",
-  "queries": [
-   "milk and cheese",
-   "tofu",
-   "sardines fish",
-   "sesame seeds",
-   "healthy meal plate"
-  ],
-  "hook": "食事摂取基準が\\n新しくなったって知ってた?",
-  "ans": "2025年版では、骨粗しょう症が新たに検討の対象に加わりました。",
-  "why": "カルシウムの摂取量と骨粗しょう症の関連は、研究結果が必ずしも一致していないとされています。",
-  "pt": "特定の栄養素だけでなく、食事全体のバランスを見る。",
-  "cta": "保存して、次の食事の参考に",
-  "apply": true
+  "apply": false
  }
 ]

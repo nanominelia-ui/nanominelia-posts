@@ -306,6 +306,76 @@ def note_slide(no, i, text, out, photo, em=None):
         d.text((130, 1160), "☆ メモしておこう", font=hf(44), fill=(214, 90, 130))
     os.makedirs(os.path.dirname(out), exist_ok=True); img.convert("RGB").save(out, "JPEG", quality=92, subsampling=0)
 
+# ===== recipe(レシピ本風・明朝体) =====
+_SERIF = ["/usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc", "/usr/share/fonts/opentype/noto/NotoSerifCJK-Medium.ttc"]
+def sf(size, bold=True):
+    p = _SERIF[0 if bold else 1]
+    if not os.path.exists(p): p = _SERIF[0]
+    try: return ImageFont.truetype(p, size, index=0)
+    except Exception: return pc.font(size)
+R_PAPER = (249, 243, 230); R_INK = (58, 44, 34); R_ACC = (172, 84, 52); R_SUB = (120, 100, 82)
+R_LABELS = ["", "要点", "理由", "ポイント", "ひとこと"]
+
+def _rpaper():
+    import random
+    img = Image.new("RGB", (W, H), R_PAPER); px = img.load(); rnd = random.Random(7)
+    for _ in range(26000):
+        x, y = rnd.randrange(W), rnd.randrange(H); v = rnd.randint(-7, 3)
+        r, g, b = px[x, y]; px[x, y] = (r + v, g + v, b + v)
+    d = ImageDraw.Draw(img)
+    d.rectangle([36, 36, W - 37, H - 37], outline=R_INK, width=3)
+    d.rectangle([50, 50, W - 51, H - 51], outline=R_INK, width=1)
+    return img
+
+def _spaced(d, xy, text, font, fill, gap=6, anchor="l"):
+    w = sum(d.textlength(c, font=font) + gap for c in text) - gap; x, y = xy
+    if anchor == "m": x -= w / 2
+    for c in text: d.text((x, y), c, font=font, fill=fill); x += d.textlength(c, font=font) + gap
+
+def _frame_photo(img, photo, box):
+    x0, y0, x1, y1 = box; ph = pc.cover_crop(photo).resize((W, H)) if False else photo.convert("RGB")
+    tw, th = x1 - x0, y1 - y0; r = max(tw / ph.width, th / ph.height)
+    ph = ph.resize((int(ph.width * r) + 1, int(ph.height * r) + 1)); l = (ph.width - tw) // 2; t = (ph.height - th) // 2
+    img.paste(ph.crop((l, t, l + tw, t + th)), (x0, y0))
+    d = ImageDraw.Draw(img); d.rectangle([x0 - 8, y0 - 8, x1 + 8, y1 + 8], outline=R_INK, width=2)
+
+def recipe_slide(no, i, text, out, photo, em=None):
+    img = _rpaper(); d = ImageDraw.Draw(img)
+    _spaced(d, (W / 2, 82), "MINERAL  NOTES", sf(28), R_SUB, 8, "m")
+    d.line([(110, 132), (W - 110, 132)], fill=R_INK, width=2); d.line([(110, 140), (W - 110, 140)], fill=R_INK, width=1)
+    if i == 1:
+        d.text((W / 2, 175), f"No.{no:02d}", font=sf(40), fill=R_ACC, anchor="ma")
+        _frame_photo(img, photo, (130, 250, W - 130, 800)); d = ImageDraw.Draw(img)
+        d.text((W - 130, 822), "Fig.1  本日のテーマ", font=sf(26, False), fill=R_SUB, anchor="ra")
+        nl = text.count("\n") + 1
+        for sz in (82, 74, 66, 60, 54):
+            fo = sf(sz); ls = pc.wrap(text, d, fo, W - 260)
+            if len(ls) <= nl: break
+        y = 900
+        for ln in ls:
+            wln = d.textlength(ln, font=fo); x = (W - wln) / 2
+            if em and em in ln:
+                a = ln.index(em); x0 = x + d.textlength(ln[:a], font=fo); x1 = x0 + d.textlength(em, font=fo)
+                d.line([(x0, y + sz * 1.12), (x1, y + sz * 1.12)], fill=R_ACC, width=5)
+            d.text((x, y), ln, font=fo, fill=R_INK); y += int(sz * 1.35)
+        d.line([(W / 2 - 60, 1210), (W / 2 + 60, 1210)], fill=R_ACC, width=3)
+        d.text((W / 2, 1238), "ページをめくって、つづきへ", font=sf(30, False), fill=R_SUB, anchor="ma")
+    else:
+        d.text((130, 175), f"No.{no:02d}", font=sf(32), fill=R_SUB)
+        pg = f"{i - 1} / 4"; d.text((W - 130, 175), pg, font=sf(32), fill=R_SUB, anchor="ra")
+        d.text((130, 250), f"{i - 1:02d}", font=sf(120), fill=R_ACC)
+        d.text((290, 300), R_LABELS[i - 1], font=sf(58), fill=R_INK)
+        d.line([(290, 380), (W - 130, 380)], fill=R_INK, width=2)
+        fo = sf(60); ls = pc.wrap(text, d, fo, W - 300); sz = 60
+        while len(ls) > 6 and sz > 44: sz -= 4; fo = sf(sz); ls = pc.wrap(text, d, fo, W - 300)
+        y = 430
+        for ln in ls:
+            d.text((150, y), ln, font=fo, fill=R_INK); y += int(sz * 1.6)
+            d.line([(140, y - int(sz * 0.18)), (W - 140, y - int(sz * 0.18))], fill=(205, 190, 168), width=1)
+        _frame_photo(img, photo, (190, 790, W - 190, 1200)); d = ImageDraw.Draw(img)
+        d.text((W / 2, 1240), f"Fig.{i}", font=sf(24, False), fill=R_SUB, anchor="ma")
+    img.save(out, "JPEG", quality=92, subsampling=0)
+
 def build(r, photos=None):
     texts = [r["hook"].replace("\\n", "\n"), r["ans"], r["why"], r["pt"], r["cta"]]
     outs = {}
@@ -314,6 +384,7 @@ def build(r, photos=None):
             out = f"public/posts/{r['no']:02d}/{i}.jpg" if r.get("apply") else f"samples/{r['no']}_{style}/{i}.jpg"
             if style == "photo": photo_slide(r["no"], i, t, photos[(i - 1) % len(photos)], out)
             elif style == "note": note_slide(r["no"], i, t, out, photos[(i - 1) % len(photos)], r.get("em"))
+            elif style == "recipe": os.makedirs(os.path.dirname(out), exist_ok=True); recipe_slide(r["no"], i, t, out, photos[(i - 1) % len(photos)], r.get("em"))
             elif style == "magazine": magazine_slide(r["no"], i, t, out, photos[(i - 1) % len(photos)], r.get("kicker", "MINERAL NOTES"), r.get("stat"), r.get("em"))
             elif style == "editorial": editorial_slide(r["no"], i, t, out, photos[0] if photos else None)
             elif style == "bold": bold_slide(r["no"], i, t, out, r.get("stat"), r.get("em"))
@@ -323,7 +394,7 @@ def build(r, photos=None):
 if __name__ == "__main__":
     for r in json.load(open(sys.argv[1])):
         photos = []
-        if any(x in r.get("styles", ["photo", "minimal"]) for x in ("photo", "editorial", "magazine", "note")):
+        if any(x in r.get("styles", ["photo", "minimal"]) for x in ("photo", "editorial", "magazine", "note", "recipe")):
             for k, q in enumerate(r["queries"]):
                 p, src = pc.fetch_photo(q, r["no"] * 10 + k); photos.append(p); print("photo", q, src)
         build(r, photos); print("ok", r["no"])
